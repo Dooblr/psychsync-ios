@@ -7,26 +7,6 @@
 
 import SwiftUI
 
-// MARK: - Onboarding data model
-struct OnboardingData: Codable {
-    // Screen 2
-    var goals: [String] = []
-    var otherGoalText: String?
-
-    // Screen 3 (baseline)
-    var moodIndex: Int?          // 0..4 (emoji compass)
-    var energyLevel: Int = 3     // 1..5
-    var sleepQuality: String?    // "Good" / "Fair" / "Poor"
-
-    // Screen 4 (preferences)
-    var checkInFrequency: String?      // Daily / Few times a week / Just when I feel like it
-    var notificationsChoice: String?   // Remind / Decide later
-    var supportTypes: [String] = []    // multi-select
-
-    // Metadata
-    var completedDate: Date?
-}
-
 // MARK: - ViewModel (simple local state holder)
 final class OnboardingViewModel: ObservableObject {
     @Published var data = OnboardingData()
@@ -59,75 +39,6 @@ final class OnboardingViewModel: ObservableObject {
         data = OnboardingData()
         currentPage = 0
         showJSON = false
-    }
-}
-
-// MARK: - Custom Energy Slider Component
-struct CustomEnergySlider: View {
-    @Binding var value: Int
-    let range: ClosedRange<Int>
-    
-    var body: some View {
-        VStack(spacing: 0) {
-            GeometryReader { geometry in
-                ZStack(alignment: .leading) {
-                    // Track
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(Color(.systemGray4))
-                        .frame(height: 16)
-                    
-                    // Progress
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(Color.accentColor)
-                        .frame(
-                            width: max(0, CGFloat(value - range.lowerBound) / CGFloat(range.upperBound - range.lowerBound) * geometry.size.width),
-                            height: 16
-                        )
-                    
-                    // Thumb (rectangular playhead)
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(Color.accentColor)
-                        .frame(width: 8, height: 24)
-                        .shadow(color: .black.opacity(0.2), radius: 2, x: 0, y: 1)
-                        .offset(
-                            x: max(0, min(
-                                geometry.size.width - 8,
-                                CGFloat(value - range.lowerBound) / CGFloat(range.upperBound - range.lowerBound) * geometry.size.width - 4
-                            ))
-                        )
-                }
-                .contentShape(Rectangle())
-                .gesture(
-                    DragGesture(minimumDistance: 0)
-                        .onChanged { gestureValue in
-                            let percent = max(0, min(1, gestureValue.location.x / geometry.size.width))
-                            let newValue = range.lowerBound + Int(percent * Double(range.upperBound - range.lowerBound))
-                            value = newValue
-                        }
-                )
-            }
-            .frame(height: 24)
-        }
-    }
-}
-
-// MARK: - Reusable Styles
-struct CardBackground: ViewModifier {
-    // Use dynamic system colors for dark/light compatibility
-    var colors: [Color] = [Color(.secondarySystemBackground), Color(.systemBackground)]
-    func body(content: Content) -> some View {
-        content
-            .padding()
-            .frame(maxWidth: .infinity)
-            .background(
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(
-                        LinearGradient(gradient: Gradient(colors: colors),
-                                       startPoint: .topLeading,
-                                       endPoint: .bottomTrailing)
-                    )
-            )
-            .shadow(color: Color.black.opacity(0.12), radius: 8, x: 0, y: 6)
     }
 }
 
@@ -445,8 +356,6 @@ struct ScreenGoal: View {
     }
 }
 
-
-
 // Screen 3: Current State (Baseline)
 struct ScreenBaseline: View {
     @Binding var moodIndex: Int
@@ -506,7 +415,7 @@ struct ScreenBaseline: View {
 
             // Sleep quality segmented
             VStack(alignment: .leading, spacing: 8) {
-                Text("Sleep quality")
+                Text("How's your sleep?")
                     .fontWeight(.semibold)
                     .foregroundColor(Color.primary)
                 Picker("Sleep", selection: $sleepQuality) {
@@ -544,7 +453,7 @@ struct ScreenPreferences: View {
     var body: some View {
         VStack(spacing: 16) {
             VStack(alignment: .leading, spacing: 8) {
-                Text("How would you like to use the app?")
+                Text("Our job is to help")
                     .font(.title2)
                     .fontWeight(.bold)
                     .foregroundColor(Color.primary)
